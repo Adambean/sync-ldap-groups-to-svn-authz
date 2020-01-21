@@ -1,0 +1,36 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/sync_ldap_groups_to_svn_authz.py",
+      "args": [
+        "-d",
+        "uid=youradmin,ou=svc,dc=xifeng,dc=com",
+        "-p",
+        "yourpassword",
+        "-l",
+        "ldap://localhost:389",
+        "-b",
+        "ou=group,dc=xifeng,dc=com",
+        "-g",
+        "(objectclass=group)",
+        "-m",
+        "member",
+        "-u",
+        "(objectclass=inetOrgPerson)",
+        "-i",
+        "uid",
+        "-z",
+        "authz.txt",
+        "-v"
+      ],
+      "console": "externalTerminal"
+    }
+  ]
+}

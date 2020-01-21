@@ -131,7 +131,8 @@ def search_for_groups(ldapobject):
   """This function will search the LDAP directory for group definitions."""
 
   groups = []
-  result_set = get_ldap_search_resultset(base_dn, group_query, ldapobject)
+  # yufufix: due to querying membership is expensive, need to explicity specify the returned attr
+  result_set = get_ldap_search_resultset(base_dn, group_query, ldapobject, ldap.SCOPE_BASE, ["name", group_member_attribute])
 
   if (len(result_set) == 0):
     if not silent:
@@ -158,7 +159,8 @@ def get_groups(ldapobject):
   groups = []
   for group_dn in group_dns:
     try:
-      result_set = get_ldap_search_resultset(group_dn, group_query, ldapobject, ldap.SCOPE_BASE)
+      # yufufix: due to querying membership is expensive, need to explicity specify the returned attr
+      result_set = get_ldap_search_resultset(group_dn, group_query, ldapobject, ldap.SCOPE_BASE, ["name",group_member_attribute])
       for i in range(len(result_set)):
         for entry in result_set[i]:
           groups.append(entry)
@@ -177,10 +179,10 @@ def get_groups(ldapobject):
 
 # get_groups()
 
-def get_ldap_search_resultset(base_dn, group_query, ldapobject, scope=ldap.SCOPE_SUBTREE):
+def get_ldap_search_resultset(base_dn, group_query, ldapobject, scope=ldap.SCOPE_SUBTREE, attrlist=None):
   """This function will return a query result set."""
   result_set = []
-  result_id = ldapobject.search(base_dn, scope, group_query)
+  result_id = ldapobject.search(base_dn, scope, group_query, attrlist)
 
   while 1:
     result_type, result_data = ldapobject.result(result_id, 0)
@@ -209,6 +211,7 @@ def get_members_from_group(group, ldapobject):
   # We need to check if the member is a group and handle specially
   for member in group_members:
     try:
+      # yufufix: 这个也有问题, 这段代码工作的前提是假定member是个合法的basedn，而yufu的posixGroup返回的memberUid属性是个用户登陆名，不是basedn. 所以不能用posixGroup，可以用group
       user = get_ldap_search_resultset(member, user_query, ldapobject)
 
       if (len(user) == 1):
@@ -448,7 +451,8 @@ def print_group_model(groups, memberships):
       shutil.move(authz_path, authz_path + ".bak")
   
     shutil.move(tmp_authz_path, authz_path)
-    os.chmod(authz_path, filemode.st_mode)
+    #yufufix: 下面一段在我的macos上跑报错了，所以我给注释掉了
+    # os.chmod(authz_path, filemode.st_mode)
   else:
     tmpfile = open(tmp_authz_path, 'r')
 

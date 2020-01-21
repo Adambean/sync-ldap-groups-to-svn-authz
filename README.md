@@ -220,3 +220,31 @@ There are other such filters for Active Directory available at: (http://www.ldap
 # Summary
 
 So now that we've seen how the script is ran, what is necessary to get it running and even a complete example, it's now up to you to get this thing into your Subversion infrastructure.  Immediate ideas are to automate this with your operating system's task scheduler and/or create a web interface to kick this script off on an as-needed basis. Regardless of how you use it, the *"LDAP Groups to Subversion Authz Groups Bridge"* should make the error-prone, tedious and easy-to-forget process of manually synchronizing your LDAP group models to Subversion's authz file much, much easier.  It might even get so easy you forget that Subversion doesn't natively support LDAP groups.
+
+# for yufu-ldap 
+
+已知问题:
+
+1. 无法同步group中的membership(user)
+  - 因为获取membership的查询比较昂贵，所以在查询group的时候需要明确指定返回GROUP_MEMBER_ATTRIBUTE
+  - 该脚本正常工作基于一个假设, 即GROUP_MEMBER_ATTRIBUTE属性的值为一个合法的basedn: 而这一点未必成立(对于yufu的posix group来讲就不成立，因为关联关系为memberUid, 而该属性的值为用户的登陆名，而不是一个basedn)
+   
+建议用法:
+
+1. 不用yufu的posix group, 改用group， 即参见.vscode/launch.json里的配置
+    ```json
+        "-b",
+        "ou=group,dc=xifeng,dc=com",
+        "-g",
+        "(objectclass=group)",
+        "-m",
+        "member",
+        "-u",
+        "(objectclass=inetOrgPerson)",
+        "-i",
+        "uid",
+    ```
+
+YuFu的改动:
+
+1. 请在代码里搜索关键字yufufix:
