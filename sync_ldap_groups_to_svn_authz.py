@@ -132,7 +132,7 @@ def search_for_groups(ldapobject):
 
   groups = []
   # yufufix: due to querying membership is expensive, need to explicity specify the returned attr
-  result_set = get_ldap_search_resultset(base_dn, group_query, ldapobject, ldap.SCOPE_BASE, ["name", group_member_attribute])
+  result_set = get_ldap_search_resultset(base_dn, group_query, ldapobject, ldap.SCOPE_BASE, ["cn", group_member_attribute])
 
   if (len(result_set) == 0):
     if not silent:
@@ -160,7 +160,7 @@ def get_groups(ldapobject):
   for group_dn in group_dns:
     try:
       # yufufix: due to querying membership is expensive, need to explicity specify the returned attr
-      result_set = get_ldap_search_resultset(group_dn, group_query, ldapobject, ldap.SCOPE_BASE, ["name",group_member_attribute])
+      result_set = get_ldap_search_resultset(group_dn, group_query, ldapobject, ldap.SCOPE_BASE, ["cn",group_member_attribute])
       for i in range(len(result_set)):
         for entry in result_set[i]:
           groups.append(entry)
