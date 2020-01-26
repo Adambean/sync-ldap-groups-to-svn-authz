@@ -225,20 +225,32 @@ So now that we've seen how the script is ran, what is necessary to get it runnin
 
 已知问题:
 
-1. 无法同步group中的membership(user)
+1. 无法同步group/posixGroup中的membership(user)
   - 因为获取membership的查询比较昂贵，所以在查询group的时候需要明确指定返回GROUP_MEMBER_ATTRIBUTE
-  - 该脚本正常工作基于一个假设, 即GROUP_MEMBER_ATTRIBUTE属性的值为一个合法的basedn: 而这一点未必成立(对于yufu的posix group来讲就不成立，因为关联关系为memberUid, 而该属性的值为用户的登陆名，而不是一个basedn)
    
 建议用法:
 
-1. 不用yufu的posix group, 改用group， 即参见.vscode/launch.json里的配置
+1. 用yufu的group， 即参见.vscode/launch.json里的配置
     ```json
         "-b",
         "ou=group,dc=xifeng,dc=com",
         "-g",
-        "(objectclass=group)",
+        "(objectclass=groupOfNames)",
         "-m",
         "member",
+        "-u",
+        "(objectclass=inetOrgPerson)",
+        "-i",
+        "uid",
+    ```
+2. 用yufu的posix group， 即参见.vscode/launch.json里的配置
+    ```json
+        "-b",
+        "ou=posixGroup,dc=xifeng,dc=com",
+        "-g",
+        "(objectclass=posixGroup)",
+        "-m",
+        "memberUid",
         "-u",
         "(objectclass=inetOrgPerson)",
         "-i",

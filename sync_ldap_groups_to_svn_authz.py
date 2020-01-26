@@ -113,7 +113,7 @@ application_description = "The '%s' is a simple script that will query your " \
 def bind():
   """This function will bind to the LDAP instance and return an ldapobject."""
 
-  ldapobject = ldap.initialize(url)
+  ldapobject = ldap.initialize(url, trace_level=2)
 
   ldapobject.bind_s(bind_dn, bind_password)
 
@@ -139,9 +139,13 @@ def search_for_groups(ldapobject):
       sys.stderr.write("The group_query %s did not return any results.\n" % group_query)
     return
 
+  groups = result_set
+
+  """
   for i in range(len(result_set)):
     for entry in result_set[i]:
       groups.append(entry)
+  """
 
   if verbose:
     if is_outfile_specified:
@@ -182,16 +186,30 @@ def get_groups(ldapobject):
 def get_ldap_search_resultset(base_dn, group_query, ldapobject, scope=ldap.SCOPE_SUBTREE, attrlist=None):
   """This function will return a query result set."""
   result_set = []
+  # yufufix: use synchronized ldap search. dunno why async search blocked somehow. 
+  result = ldapobject.search_s(base_dn, scope, group_query, attrlist)
+  return result
+
+  """
   result_id = ldapobject.search(base_dn, scope, group_query, attrlist)
+  print("get_ldap_search_resultset begin, result_id", result_id )
 
   while 1:
     result_type, result_data = ldapobject.result(result_id, 0)
+    print("get_ldap_search_resultset looping" )
     if (result_type == ldap.RES_SEARCH_ENTRY):
-        result_set.append(result_data)
+      print("continue while loop")
+      result_set.append(result_data)
     elif (result_type == ldap.RES_SEARCH_RESULT):
+      print("complete while loop")
       break
+    else:
+      print("while loop, result_type", result_type)
+  print("get_ldap_search_resultset end")
 
   return result_set   
+    """
+
 
 # get_ldap_search_resultset()
 
@@ -208,15 +226,33 @@ def get_members_from_group(group, ldapobject):
   if group.has_key(group_member_attribute):
     group_members = group[group_member_attribute]
 
+  for member in group_members:
+    if member:
+      if "," in member: # looks like a valid dn format
+        try:
+          #yufufix: do not query the membership, use the value of group_member_attribute
+          dn = ldap.dn.str2dn(member)
+          members.append(dn[0][0][1])
+        except:
+          sys.stderr.write("error parsing dn, ignore")
+          continue
+      else: # not a dn format, this might be used in case the value of member is a memberUid
+        members.append(member)
+
+  """
   # We need to check if the member is a group and handle specially
   for member in group_members:
     try:
-      # yufufix: 这个也有问题, 这段代码工作的前提是假定member是个合法的basedn，而yufu的posixGroup返回的memberUid属性是个用户登陆名，不是basedn. 所以不能用posixGroup，可以用group
+      # yufufix: 
+      print("get_members_from_group:", member)
+      if len(member) == 0:
+        print("empty member in get_members_from_group, continue", member)
+        continue
       user = get_ldap_search_resultset(member, user_query, ldapobject)
 
-      if (len(user) == 1):
+      if (user and len(user) == 1):
         # The member is a user
-        attrs = user[0][0][1]
+        attrs = user[0][1]
 
         if (attrs.has_key(userid_attribute)):
           if verbose:
@@ -233,7 +269,7 @@ def get_members_from_group(group, ldapobject):
         # Check to see if this member is really a group
         mg = get_ldap_search_resultset(member, group_query, ldapobject)
  
-        if (len(mg) == 1):
+        if (mg and len(mg) == 1):
           # The member is a group
           if followgroups:
             # We walk in this group to add its members
@@ -253,6 +289,7 @@ def get_members_from_group(group, ldapobject):
     except ldap.LDAPError, error_message:
       if not silent:
         sys.stderr.write("[WARNING]: %s object was not found...\n" % member)
+  """
   # uniq values
   members = sorted(list(set(members)))
   if verbose:
@@ -451,7 +488,7 @@ def print_group_model(groups, memberships):
       shutil.move(authz_path, authz_path + ".bak")
   
     shutil.move(tmp_authz_path, authz_path)
-    #yufufix: 下面一段在我的macos上跑报错了，所以我给注释掉了
+    #yufufix: 
     # os.chmod(authz_path, filemode.st_mode)
   else:
     tmpfile = open(tmp_authz_path, 'r')

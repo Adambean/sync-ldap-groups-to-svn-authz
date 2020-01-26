@@ -11,15 +11,15 @@
       "program": "${workspaceFolder}/sync_ldap_groups_to_svn_authz.py",
       "args": [
         "-d",
-        "uid=youradmin,ou=svc,dc=xifeng,dc=com",
+        "uid=youradmin,ou=svc,dc=your-yufu-tenant,dc=com",
         "-p",
         "yourpassword",
         "-l",
         "ldap://localhost:389",
         "-b",
-        "ou=group,dc=xifeng,dc=com",
+        "ou=group,dc=your-yufu-tenant,dc=com",
         "-g",
-        "(objectclass=group)",
+        "(objectclass=groupOfNames)",
         "-m",
         "member",
         "-u",
@@ -28,6 +28,7 @@
         "uid",
         "-z",
         "authz.txt",
+        "-n",
         "-v"
       ],
       "console": "externalTerminal"
