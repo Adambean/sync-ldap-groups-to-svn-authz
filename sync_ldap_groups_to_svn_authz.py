@@ -28,7 +28,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-import ConfigParser, datetime, getpass, os, re, sys, tempfile, shutil
+import configparser, datetime, getpass, os, re, sys, tempfile, shutil
 from optparse import OptionParser
 
 try:
