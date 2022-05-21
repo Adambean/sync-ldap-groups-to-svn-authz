@@ -168,7 +168,7 @@ def get_groups(ldapobject):
       for i in range(len(result_set)):
         for entry in result_set[i]:
           groups.append(entry)
-    except ldap.NO_SUCH_OBJECT, e:
+    except ldap.NO_SUCH_OBJECT as e:
       if not silent:
         sys.stderr.write("Couldn't find a group with DN %s.\n" % group_dn)
       raise e
@@ -286,7 +286,7 @@ def get_members_from_group(group, ldapobject):
           if not silent:
             sys.stderr.write("[WARNING]: %s is a member of %s but is neither a group " \
                              "nor a user.\n" % (member, group['cn'][0]))
-    except ldap.LDAPError, error_message:
+    except ldap.LDAPError as error_message:
       if not silent:
         sys.stderr.write("[WARNING]: %s object was not found...\n" % member)
   """
@@ -725,7 +725,7 @@ def main():
 
   try:
     ldapobject = bind()
-  except ldap.LDAPError, error_message:
+  except ldap.LDAPError as error_message:
     sys.stderr.write("Could not connect to %s. Error: %s \n" % (url, error_message))
     sys.exit(1)
 
@@ -734,7 +734,7 @@ def main():
       groups = get_groups(ldapobject)    
     else:
       groups = search_for_groups(ldapobject)
-  except ldap.LDAPError, error_message:
+  except ldap.LDAPError as error_message:
     sys.stderr.write("Error performing search: %s \n" % error_message)
     sys.exit(1)
 
@@ -745,7 +745,7 @@ def main():
 
   try:
     memberships = create_group_model(groups, ldapobject)[1]
-  except ldap.LDAPError, error_message:
+  except ldap.LDAPError as error_message:
     sys.stderr.write("Error creating group model: %s\n" % error_message)
     sys.exit(1)
 
