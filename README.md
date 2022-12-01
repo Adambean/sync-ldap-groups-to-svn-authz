@@ -4,6 +4,10 @@ This script was written almost 10 years ago and has been barely maintained.  At 
 
 # Change Log
 
+2022-12-01:
+- Python 3 compatibility
+- Fixed groups not being found unless they are in the exact base DN (search subtree)
+
 2015-08-25 (version 1.3.0):
  - Better management of outputs: all errors/warnings are directed to stderr; info messages are given to stdout if an authz destination file is provided and are redirected to stderr otherwise.
  - New parameter -v to distinguish warning/error and info verbosity (-v enables info logs; -q disables warning/error logs).
